@@ -170,15 +170,15 @@ class AMTree(
         private fun buildTreeNodes(
             accounts: Iterable<HubAccount>
         ): List<AMTreeNode> {
-            val prev = arrayOfNulls<AMTreeNode>(1)
+            var prev: AMTreeNode? = null
             return accounts
                 .map { account ->
                     val node = AMTreeNode(
-                        prev[0],
+                        prev,
                         AMTreeLeafNodeInfo(account.address.hash(), account.update),
                         account.calculateNewAllotment()
                     )
-                    prev[0] = node
+                    prev = node
                     node
                 }
         }
@@ -277,13 +277,14 @@ class AMTreeNode(
     var right: AMTreeNode? = null
         private set
 
-
+    // build leaf node
     constructor(
         prev: AMTreeNode?,
         info: AMTreeLeafNodeInfo,
         allotment: BigInteger
     ) : this(prev?.let { prev.offset + prev.allotment } ?: BigInteger.ZERO, info, allotment)
 
+    // build internal(non-leaf) node
     constructor(
         left: AMTreeNode, right: AMTreeNode = AMTreeNode(
             left.offset + left.allotment, AMTreeLeafNodeInfo.DUMMY_NODE, BigInteger.ZERO
